@@ -30,6 +30,16 @@ public class Grabber {
         return emails;
     }
 
+    public int checkCategory(String text) {
+        if (text.contains("Університет"))
+            return 1;
+        if (text.contains("Академія"))
+            return 2;
+        if (text.contains("Інститут"))
+            return 3;
+        return 4;
+    }
+
     public Set<String> vnzFinder(String url) {
         Document doc = null;
         Set<String> emails = new HashSet<String>();
@@ -37,11 +47,20 @@ public class Grabber {
             doc = Jsoup.connect(url).userAgent("Mozilla").timeout(10 * 1000).get();
             String region = "#menu-nav > li.current > a";
             System.out.print(doc.select(region).text() + " has ");
-            String cssTable = "#okrArea";
-            Elements AllLinks = doc.select(cssTable).select("a[href]");
+            String cssCategory;
+            int row = 1, category = 0;
             Set<Element> links = new HashSet<Element>();
-            for (Element link : AllLinks) {
-                links.add(link);
+            while (category < 3) {
+                cssCategory = String.format("#okrArea > div:nth-child(%d) > div.accordion-heading.togglize > a", row);
+                category = checkCategory(doc.select(cssCategory).toString());
+                if (category <= 3) {
+                    String cssTable = String.format("#vnzt%d > tbody", category - 1);
+                    Elements AllLinks = doc.select(cssTable).select("a[href]");
+                    for (Element link : AllLinks) {
+                        links.add(link);
+                    }
+                }
+                row++;
             }
             for (Element link : links) {
                 String tmpLink = link.toString();
@@ -59,13 +78,13 @@ public class Grabber {
 
     public void regionFinder() {
         Set<String> emails = new HashSet<String>();
-        for (int i = 3; i <= 26; i++) {//27 - Kyiv
+        for (int i = 27; i <= 27; i++) {//27 - Kyiv
             String url = String.format("http://www.vstup.info/2017/i2017o%d.html", i);
             emails.addAll(vnzFinder(url));
         }
         System.out.println(String.format("Total number of emails: %d", emails.size()));
         try {
-            String path = String.format("All regions without Kyiv (%d emails).txt", emails.size());
+            String path = String.format("Kyiv (%d emails).txt", emails.size());
             File f = new File(path);
             f.createNewFile();
             PrintWriter out = new PrintWriter(path);
