@@ -13,7 +13,7 @@ import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Grabber {
+public class Grabber_VstupInfo {
     public Set<String> pageParse(String url){
         Document doc = null;
         Set<String> emails = new HashSet<String>();
